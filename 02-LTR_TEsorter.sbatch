@@ -22,9 +22,9 @@ mkdir -p "$TESDIR" "$FIGDIR"
 TESORTER_SIF=/data/courses/assembly-annotation-course/CDS_annotation/containers/TEsorter_1.3.0.sif
 R_IDENTITY=/data/courses/assembly-annotation-course/CDS_annotation/scripts/02-full_length_LTRs_identity.R
 
-# EDTA 产生的 LTR 文件
-LTR_FA=$EDTA_DIR/genome_Sha.fasta.mod.EDTA.raw/genome_Sha.fasta.mod.LTR.raw.fa
-LTR_GFF=$EDTA_DIR/genome_Sha.fasta.mod.EDTA.raw/genome_Sha.fasta.mod.LTR.intact.raw.gff3
+# **替换 Sha → N13**
+LTR_FA=$EDTA_DIR/genome_N13.fasta.mod.EDTA.raw/genome_N13.fasta.mod.LTR.raw.fa
+LTR_GFF=$EDTA_DIR/genome_N13.fasta.mod.EDTA.raw/genome_N13.fasta.mod.LTR.intact.raw.gff3
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
@@ -51,7 +51,6 @@ cp -v "$LTR_FA"  "$TMPRUN/LTR.raw.fa"
 cp -v "$LTR_GFF" "$TMPRUN/LTR.intact.raw.gff3"
 
 # -------- 1) 跑 TEsorter 做 clade 分类 --------
-# -pre LTR 会生成 LTR.liban.rexdb-plant.* 等文件
 apptainer exec --bind "$WORKDIR","/data/courses","$TMPRUN" "$TESORTER_SIF" \
   TEsorter "$TMPRUN/LTR.raw.fa" -db rexdb-plant -p $SLURM_CPUS_PER_TASK -pre "$TMPRUN/LTR"
 
@@ -59,7 +58,6 @@ apptainer exec --bind "$WORKDIR","/data/courses","$TMPRUN" "$TESORTER_SIF" \
 rsync -av "$TMPRUN"/LTR.* "$TESDIR"/
 
 # -------- 2) 运行老师的 R 脚本画 LTR identity 直方图 --------
-# 脚本会从 intact.gff3 中读取 ltr_identity 信息并画图
 if ! command -v Rscript >/dev/null 2>&1; then
   echo "[WARN] Rscript not found in PATH. If this step fails, try: module load R"
 fi
